@@ -16,5 +16,8 @@ namespace Service.PaymentDeposit.Settings
 
         [YamlProperty("PaymentDeposit.PaymentDepositRepositoryServiceUrl")]
         public string PaymentDepositRepositoryServiceUrl { get; set; }
+
+        [YamlProperty("PaymentDeposit.TestProviderBridgeUrl")]
+        public string PaymentProviderBridgeTestServiceUrl { get; set; }
     }
 }

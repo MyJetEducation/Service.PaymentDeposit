@@ -8,7 +8,7 @@ namespace Service.PaymentDeposit.Services
 		public PaymentProviderBridgeInfo GetPaymentProviderBridge(DepositGrpcRequest request) => new PaymentProviderBridgeInfo
 		{
 			Name = "test",
-			Url = "http://"
+			Url = Program.Settings.PaymentProviderBridgeTestServiceUrl
 		};
 	}
 }

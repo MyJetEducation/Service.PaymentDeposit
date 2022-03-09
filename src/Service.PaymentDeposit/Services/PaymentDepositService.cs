@@ -33,7 +33,7 @@ namespace Service.PaymentDeposit.Services
 
 		public async ValueTask<DepositGrpcResponse> DepositAsync(DepositGrpcRequest request)
 		{
-			PaymentProviderBridgeInfo bridgeInfo = _paymentProviderResolver.GetPaymentProviderBridge(request);
+			PaymentProviderBridgeInfo bridgeInfo = _paymentProviderRouter.GetPaymentProviderBridge(request);
 			if (bridgeInfo == null)
 			{
 				_logger.LogError("Can't find deposit provider for request: {request}", request);
@@ -41,13 +41,17 @@ namespace Service.PaymentDeposit.Services
 				return new DepositGrpcResponse();
 			}
 
-			IPaymentProviderGrpcService providerBridge = _paymentProviderRouter.GetProviderBridge(bridgeInfo);
+			_logger.LogDebug("PaymentProviderBridgeInfo recieved: {info}", bridgeInfo);
+
+			IPaymentProviderGrpcService providerBridge = _paymentProviderResolver.GetProviderBridge(bridgeInfo);
 			if (providerBridge == null)
 			{
 				_logger.LogError("Can't create provider bridge for request: {request}, bridge info: {bridgeInfo}", request, bridgeInfo);
 
 				return new DepositGrpcResponse();
 			}
+
+			_logger.LogDebug("PaymentProviderGrpcService connection created: {providerBridge}", providerBridge);
 
 			RegisterGrpcResponse registerGrpcResponse = await _paymentDepositRepositoryService.TryCall(service => service.RegisterAsync(request.ToGrpcModel(bridgeInfo)));
 			if (registerGrpcResponse == null)
@@ -58,6 +62,7 @@ namespace Service.PaymentDeposit.Services
 			}
 
 			Guid? transactionId = registerGrpcResponse.TransactionId;
+			_logger.LogDebug("Transaction registered with id: {id}", transactionId);
 
 			ProviderDepositGrpcRequest providerDepositGrpcRequest = request.ToGrpcModel(transactionId);
 			ProviderDepositGrpcResponse depositResponse = await providerBridge.DepositAsync(providerDepositGrpcRequest);
@@ -67,6 +72,8 @@ namespace Service.PaymentDeposit.Services
 
 				return new DepositGrpcResponse();
 			}
+
+			_logger.LogDebug("Response for deposit request recieved: {response}", depositResponse);
 
 			string externalId = depositResponse.ExternalId;
 			if (externalId != null)
@@ -81,6 +88,8 @@ namespace Service.PaymentDeposit.Services
 				bool setStateResult = setStateResponse?.IsSuccess == false;
 				if (!setStateResult)
 					_logger.LogError("Can't update transaction state with request: {request}", setStateResponse);
+
+				_logger.LogDebug("New state for deposit: {id} setted: {state}, externalId: {externalId}", transactionId, depositResponse.State, externalId);
 
 				return new DepositGrpcResponse
 				{
@@ -105,6 +114,8 @@ namespace Service.PaymentDeposit.Services
 
 			if (response?.IsSuccess == false)
 				_logger.LogError("Can't update transaction state with request: {request}", response);
+			else
+				_logger.LogDebug("New state (from callback) for deposit: {id} setted: {state}, externalId: {externalId}", request.TransactionId, request.State, request.ExternalId);
 		}
 	}
 }

@@ -12,7 +12,7 @@ namespace Service.PaymentDeposit.Modules
 			builder.RegisterPaymentDepositRepositoryClient(Program.Settings.PaymentDepositRepositoryServiceUrl, Program.LogFactory.CreateLogger(typeof (PaymentDepositRepositoryClientFactory)));
 
 			builder.RegisterType<PaymentProviderRouter>().AsImplementedInterfaces().SingleInstance();
-			builder.RegisterType<PaymentProviderRouter>().AsImplementedInterfaces().SingleInstance();
+			builder.RegisterType<PaymentProviderResolver>().AsImplementedInterfaces().SingleInstance();
 		}
 	}
 }

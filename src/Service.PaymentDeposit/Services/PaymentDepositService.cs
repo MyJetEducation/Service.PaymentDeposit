@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Service.Core.Client.Models;
 using Service.Grpc;
 using Service.PaymentDeposit.Domain.Models;
@@ -41,7 +42,7 @@ namespace Service.PaymentDeposit.Services
 				return new DepositGrpcResponse();
 			}
 
-			_logger.LogDebug("PaymentProviderBridgeInfo recieved: {info}", bridgeInfo);
+			_logger.LogDebug("PaymentProviderBridgeInfo recieved: {info}", JsonConvert.SerializeObject(bridgeInfo));
 
 			IPaymentProviderGrpcService providerBridge = _paymentProviderResolver.GetProviderBridge(bridgeInfo);
 			if (providerBridge == null)
@@ -51,7 +52,7 @@ namespace Service.PaymentDeposit.Services
 				return new DepositGrpcResponse();
 			}
 
-			_logger.LogDebug("PaymentProviderGrpcService connection created: {providerBridge}", providerBridge);
+			_logger.LogDebug("PaymentProviderGrpcService connection created: {providerBridge}", JsonConvert.SerializeObject(providerBridge));
 
 			RegisterGrpcResponse registerGrpcResponse = await _paymentDepositRepositoryService.TryCall(service => service.RegisterAsync(request.ToGrpcModel(bridgeInfo)));
 			if (registerGrpcResponse == null)
@@ -73,7 +74,7 @@ namespace Service.PaymentDeposit.Services
 				return new DepositGrpcResponse();
 			}
 
-			_logger.LogDebug("Response for deposit request recieved: {response}", depositResponse);
+			_logger.LogDebug("Response for deposit request recieved: {response}", JsonConvert.SerializeObject(depositResponse));
 
 			string externalId = depositResponse.ExternalId;
 			if (externalId != null)
@@ -93,7 +94,8 @@ namespace Service.PaymentDeposit.Services
 
 				return new DepositGrpcResponse
 				{
-					Approved = setStateResult
+					Approved = setStateResult,
+					RedirectUrl = depositResponse.RedirectUrl
 				};
 			}
 

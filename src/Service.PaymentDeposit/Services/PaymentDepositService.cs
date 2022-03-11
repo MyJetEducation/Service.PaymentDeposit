@@ -78,13 +78,13 @@ namespace Service.PaymentDeposit.Services
 				State = state
 			}));
 
-			bool setStateResult = setStateResponse?.IsSuccess == false;
-			if (!setStateResult)
-				_logger.LogError("Can't update transaction state with request: {request}", setStateResponse);
-			else
+			bool stateResponse = setStateResponse?.IsSuccess == true;
+			if (stateResponse)
 				_logger.LogDebug("New state for deposit: {id} setted: {state}, externalId: {externalId}", transactionId, state, externalId);
+			else
+				_logger.LogError("Can't update transaction state with request: {request}", setStateResponse);
 
-			return setStateResult;
+			return stateResponse;
 		}
 
 		private DepositGrpcResponse GetErrorResponse(string message, params object[] objs)

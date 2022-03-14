@@ -1,5 +1,5 @@
 ﻿using Service.PaymentDeposit.Domain.Models;
-using Service.PaymentDeposit.Models;
+using Service.PaymentProviderRouter.Grpc.Models;
 
 namespace Service.PaymentDeposit.Services
 {

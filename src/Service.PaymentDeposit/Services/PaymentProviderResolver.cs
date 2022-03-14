@@ -2,7 +2,7 @@
 using Grpc.Net.Client;
 using ProtoBuf.Grpc.Client;
 using Service.PaymentDeposit.Domain.Models;
-using Service.PaymentDeposit.Models;
+using Service.PaymentProviderRouter.Grpc.Models;
 
 namespace Service.PaymentDeposit.Services
 {
@@ -13,6 +13,6 @@ namespace Service.PaymentDeposit.Services
 		static PaymentProviderResolver() => GrpcServices = new ConcurrentDictionary<PaymentProviderBridgeInfo, IPaymentProviderGrpcService>();
 
 		public IPaymentProviderGrpcService GetProviderBridge(PaymentProviderBridgeInfo bridgeInfo) =>
-			GrpcServices.GetOrAdd(bridgeInfo, info => GrpcChannel.ForAddress(info.Url).CreateGrpcService<IPaymentProviderGrpcService>());
+			GrpcServices.GetOrAdd(bridgeInfo, info => GrpcChannel.ForAddress(info.ServiceUrl).CreateGrpcService<IPaymentProviderGrpcService>());
 	}
 }

@@ -1,6 +1,6 @@
 ﻿using Service.PaymentDeposit.Grpc.Models;
-using Service.PaymentDeposit.Models;
 using Service.PaymentDepositRepository.Grpc.Models;
+using Service.PaymentProviderRouter.Grpc.Models;
 
 namespace Service.PaymentDeposit.Mappers
 {
@@ -10,7 +10,7 @@ namespace Service.PaymentDeposit.Mappers
 		{
 			UserId = request.UserId,
 			Amount = request.Amount,
-			Provider = paymentProvider.Name,
+			Provider = paymentProvider.ProviderCode,
 			Currency = request.Currency,
 			Country = request.Country,
 			ServiceCode = request.ServiceCode,

@@ -7,10 +7,11 @@ using Service.PaymentDeposit.Domain.Models;
 using Service.PaymentDeposit.Grpc;
 using Service.PaymentDeposit.Grpc.Models;
 using Service.PaymentDeposit.Mappers;
-using Service.PaymentDeposit.Models;
 using Service.PaymentDepositRepository.Domain.Models;
 using Service.PaymentDepositRepository.Grpc;
 using Service.PaymentDepositRepository.Grpc.Models;
+using Service.PaymentProviderRouter.Grpc;
+using Service.PaymentProviderRouter.Grpc.Models;
 using DepositGrpcResponse = Service.PaymentDeposit.Grpc.Models.DepositGrpcResponse;
 
 namespace Service.PaymentDeposit.Services
@@ -18,12 +19,12 @@ namespace Service.PaymentDeposit.Services
 	public class PaymentDepositService : IPaymentDepositService
 	{
 		private readonly ILogger<PaymentDepositService> _logger;
-		private readonly IPaymentProviderRouter _paymentProviderRouter;
+		private readonly IGrpcServiceProxy<IPaymentProviderRouterService> _paymentProviderRouter;
 		private readonly IPaymentProviderResolver _paymentProviderResolver;
 		private readonly IGrpcServiceProxy<IPaymentDepositRepositoryService> _paymentDepositRepositoryService;
 
 		public PaymentDepositService(ILogger<PaymentDepositService> logger,
-			IPaymentProviderRouter paymentProviderRouter,
+			IGrpcServiceProxy<IPaymentProviderRouterService> paymentProviderRouter,
 			IPaymentProviderResolver paymentProviderResolver,
 			IGrpcServiceProxy<IPaymentDepositRepositoryService> paymentDepositRepositoryService)
 		{
@@ -35,8 +36,8 @@ namespace Service.PaymentDeposit.Services
 
 		public async ValueTask<DepositGrpcResponse> DepositAsync(DepositGrpcRequest request)
 		{
-			PaymentProviderBridgeInfo bridgeInfo = _paymentProviderRouter.GetPaymentProviderBridge(request);
-			if (bridgeInfo == null)
+			PaymentProviderBridgeInfo bridgeInfo = await _paymentProviderRouter.Service.GetPaymentProviderBridgeAsync(request.ToRouterGrpcModel());
+			if (bridgeInfo?.ProviderCode == null)
 				return GetErrorResponse("Can't find deposit provider for request: {@request}", request);
 
 			_logger.LogDebug("PaymentProviderBridgeInfo recieved: {@info}", bridgeInfo);
@@ -54,7 +55,7 @@ namespace Service.PaymentDeposit.Services
 			Guid? transactionId = registerGrpcResponse.TransactionId;
 			_logger.LogDebug("Transaction registered with id: {id}", transactionId);
 
-			ProviderDepositGrpcRequest providerDepositGrpcRequest = request.ToGrpcModel(transactionId);
+			ProviderDepositGrpcRequest providerDepositGrpcRequest = request.ToBridgeGrpcModel(transactionId);
 			ProviderDepositGrpcResponse depositResponse = await providerBridge.DepositAsync(providerDepositGrpcRequest);
 			if (depositResponse == null)
 				return GetErrorResponse("Can't call deposit on provider bridge for request: {@request}, bridge info: {@bridgeInfo}", providerDepositGrpcRequest, bridgeInfo);

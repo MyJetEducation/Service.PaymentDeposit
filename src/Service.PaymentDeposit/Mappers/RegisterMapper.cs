@@ -13,6 +13,7 @@ namespace Service.PaymentDeposit.Mappers
 			Provider = paymentProvider.Name,
 			Currency = request.Currency,
 			Country = request.Country,
+			ServiceCode = request.ServiceCode,
 			Number = request.Number,
 			Holder = request.Holder,
 			Month = request.Month,

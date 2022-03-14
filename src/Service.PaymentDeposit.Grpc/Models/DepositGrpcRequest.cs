@@ -19,18 +19,21 @@ namespace Service.PaymentDeposit.Grpc.Models
 		public string Country { get; set; }
 
 		[DataMember(Order = 5)]
-		public string Number { get; set; }
+		public string ServiceCode { get; set; }
 
 		[DataMember(Order = 6)]
-		public string Holder { get; set; }
+		public string Number { get; set; }
 
 		[DataMember(Order = 7)]
-		public string Month { get; set; }
+		public string Holder { get; set; }
 
 		[DataMember(Order = 8)]
-		public string Year { get; set; }
+		public string Month { get; set; }
 
 		[DataMember(Order = 9)]
+		public string Year { get; set; }
+
+		[DataMember(Order = 10)]
 		public string Cvv { get; set; }
 	}
 }

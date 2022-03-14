@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Service.Core.Client.Models;
 using Service.Grpc;
 using Service.PaymentDeposit.Domain.Models;
@@ -12,6 +11,7 @@ using Service.PaymentDeposit.Models;
 using Service.PaymentDepositRepository.Domain.Models;
 using Service.PaymentDepositRepository.Grpc;
 using Service.PaymentDepositRepository.Grpc.Models;
+using DepositGrpcResponse = Service.PaymentDeposit.Grpc.Models.DepositGrpcResponse;
 
 namespace Service.PaymentDeposit.Services
 {
@@ -37,19 +37,19 @@ namespace Service.PaymentDeposit.Services
 		{
 			PaymentProviderBridgeInfo bridgeInfo = _paymentProviderRouter.GetPaymentProviderBridge(request);
 			if (bridgeInfo == null)
-				return GetErrorResponse("Can't find deposit provider for request: {request}", request);
+				return GetErrorResponse("Can't find deposit provider for request: {@request}", request);
 
-			_logger.LogDebug("PaymentProviderBridgeInfo recieved: {info}", JsonConvert.SerializeObject(bridgeInfo));
+			_logger.LogDebug("PaymentProviderBridgeInfo recieved: {@info}", bridgeInfo);
 
 			IPaymentProviderGrpcService providerBridge = _paymentProviderResolver.GetProviderBridge(bridgeInfo);
 			if (providerBridge == null)
-				return GetErrorResponse("Can't create provider bridge for request: {request}, bridge info: {bridgeInfo}", request, bridgeInfo);
+				return GetErrorResponse("Can't create provider bridge for request: {@request}, bridge info: {@bridgeInfo}", request, bridgeInfo);
 
-			_logger.LogDebug("PaymentProviderGrpcService connection created: {providerBridge}", JsonConvert.SerializeObject(providerBridge));
+			_logger.LogDebug("PaymentProviderGrpcService connection created: {@providerBridge}", providerBridge);
 
 			RegisterGrpcResponse registerGrpcResponse = await _paymentDepositRepositoryService.TryCall(service => service.RegisterAsync(request.ToGrpcModel(bridgeInfo)));
 			if (registerGrpcResponse == null)
-				return GetErrorResponse("Can't register deposit transaction for request: {request}, bridge info: {bridgeInfo}", request, bridgeInfo);
+				return GetErrorResponse("Can't register deposit transaction for request: {@request}, bridge info: {@bridgeInfo}", request, bridgeInfo);
 
 			Guid? transactionId = registerGrpcResponse.TransactionId;
 			_logger.LogDebug("Transaction registered with id: {id}", transactionId);
@@ -57,9 +57,9 @@ namespace Service.PaymentDeposit.Services
 			ProviderDepositGrpcRequest providerDepositGrpcRequest = request.ToGrpcModel(transactionId);
 			ProviderDepositGrpcResponse depositResponse = await providerBridge.DepositAsync(providerDepositGrpcRequest);
 			if (depositResponse == null)
-				return GetErrorResponse("Can't call deposit on provider bridge for request: {request}, bridge info: {bridgeInfo}", providerDepositGrpcRequest, bridgeInfo);
+				return GetErrorResponse("Can't call deposit on provider bridge for request: {@request}, bridge info: {@bridgeInfo}", providerDepositGrpcRequest, bridgeInfo);
 
-			_logger.LogDebug("Response for deposit request recieved: {response}", JsonConvert.SerializeObject(depositResponse));
+			_logger.LogDebug("Response for deposit request recieved: {@response}", depositResponse);
 
 			if (!await UpdateDepositState(depositResponse.State, depositResponse.ExternalId, transactionId))
 				return DepositGrpcResponse.Error();
@@ -82,7 +82,7 @@ namespace Service.PaymentDeposit.Services
 			if (stateResponse)
 				_logger.LogDebug("New state for deposit: {id} setted: {state}, externalId: {externalId}", transactionId, state, externalId);
 			else
-				_logger.LogError("Can't update transaction state with request: {request}", setStateResponse);
+				_logger.LogError("Can't update transaction state with request: {@request}", setStateResponse);
 
 			return stateResponse;
 		}

@@ -8,32 +8,35 @@ namespace Service.PaymentDeposit.Grpc.Models
     {
 		[DataMember(Order = 1)]
 		public Guid? UserId { get; set; }
-
+		
 		[DataMember(Order = 2)]
-		public decimal Amount { get; set; }
+		public Guid? CardId { get; set; }
 
 		[DataMember(Order = 3)]
-		public string Currency { get; set; }
+		public decimal Amount { get; set; }
 
 		[DataMember(Order = 4)]
-		public string Country { get; set; }
+		public string Currency { get; set; }
 
 		[DataMember(Order = 5)]
-		public string ServiceCode { get; set; }
+		public string Country { get; set; }
 
 		[DataMember(Order = 6)]
-		public string Number { get; set; }
+		public string ServiceCode { get; set; }
 
 		[DataMember(Order = 7)]
-		public string Holder { get; set; }
+		public string Number { get; set; }
 
 		[DataMember(Order = 8)]
-		public string Month { get; set; }
+		public string Holder { get; set; }
 
 		[DataMember(Order = 9)]
-		public string Year { get; set; }
+		public string Month { get; set; }
 
 		[DataMember(Order = 10)]
+		public string Year { get; set; }
+
+		[DataMember(Order = 11)]
 		public string Cvv { get; set; }
 	}
 }

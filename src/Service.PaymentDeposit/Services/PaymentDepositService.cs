@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.Sdk.ServiceBus;
+using Service.Core.Client.Extensions;
 using Service.Core.Client.Models;
 using Service.Grpc;
 using Service.PaymentDeposit.Domain.Models;
@@ -53,7 +54,7 @@ namespace Service.PaymentDeposit.Services
 			if (bridgeInfo?.ProviderCode == null)
 				return GetErrorResponse("Can't find deposit provider for payment info: {@info}", info);
 
-			_logger.LogDebug("PaymentProviderBridgeInfo recieved: {@info}", bridgeInfo);
+			_logger.LogDebug("PaymentProviderBridgeInfo resolved: {@info}", bridgeInfo);
 
 			IPaymentProviderGrpcService bridge = _paymentProviderResolver.GetProviderBridge(bridgeInfo);
 			if (bridge == null)
@@ -158,6 +159,17 @@ namespace Service.PaymentDeposit.Services
 					Cvv = request.Cvv
 				};
 			}
+
+			_logger.LogDebug("Recieved payment info: service: {srv}, country: {cntr}, amount: {amonth}, currency: {currency}, card_id: {cardid}, card_number: {card}, holder: {holder}, month/year: {month}/{year}",
+				info.ServiceCode,
+				info.Country,
+				info.Amount, 
+				info.Currency, 
+				info.CardInfo.CardId, 
+				info.CardInfo.Number.Mask(), 
+				info.CardInfo.Holder.Mask(), 
+				info.CardInfo.Month, 
+				info.CardInfo.Year);
 
 			return info;
 		}
